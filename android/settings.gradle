@@ -1,4 +1,4 @@
-rootProject.name = 'weight-tracker'
+rootProject.name = 'Health Plus'
 
 dependencyResolutionManagement {
   versionCatalogs {

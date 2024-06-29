@@ -28,6 +28,7 @@ export function LineChartComponent(props: LineChartComponentProps) {
           yAxisLabel={props.yAxisLabel}
           yAxisSuffix={props.yAxisSuffix}
           yAxisInterval={props.yAxisInterval} 
+          hidePointsAtIndex={props.hidePointsAtIndex}
         />
       }
     </View>

@@ -2,7 +2,7 @@
 export type UserData = {
   name?: string,
   height?: number,
-  weight?: number
+  targetWeight?: number
 }
 
 export class User {
@@ -11,6 +11,8 @@ export class User {
   constructor(data: UserData | undefined) {
     this.data = data ?? {};
   }
+
+  isValid() { return this.data.name != null }
 
   getData() { return this.data; }
 }

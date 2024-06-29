@@ -21,7 +21,7 @@ export default function WeightModal(props: WeightModalProps) {
 
   const onSubmit = (e: any) => {
     let value = Number(e.nativeEvent.text);
-    if(!useLb) { value = value / KG }
+    if(useLb) { value = value * KG }
     props.addWeight(value);
   }
 

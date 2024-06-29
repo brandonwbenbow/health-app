@@ -89,10 +89,13 @@ const styles = StyleSheet.create({
     padding: 10
   },
   rowHeader: {
+    flex: 1,
+    flexShrink: 0,
+    textAlign: 'center',
     backgroundColor: '#ffffff11'
   },
   rowText: {
-    flex: 1,
+    flex: 7,
     fontWeight: 'bold'
   },
   delete: {

@@ -14,6 +14,9 @@ import DataList from '@/components/DataList';
 import ImportModal from '@/components/modal/ImportModal';
 import WeightModal from '@/components/modal/WeightModal';
 import { KG } from '@/constants/Numbers';
+import { User } from '@/constants/User';
+import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
+import { AbstractChartConfig } from 'react-native-chart-kit/dist/AbstractChart';
 
 const chartViewPadding = 10;
 
@@ -34,20 +37,23 @@ export default function WeightComponent() {
   const theme = useTheme();
 
   const [weights, setWeights] = useState<{ id: number, ts: any, value: Number }[]>([]);
-  const [user, setUser] = useState<{ [field: string]: any }>({});
+  const [user, setUser] = useState<User | null>(null);
   const [useLb, setUseLb] = useState<boolean>(true);
 
   useEffect(() => {
     nav.setOptions({ headerShown: false, title: "Weight", headerBackVisible: false })
-  }, [nav])
+  }, [nav]);
 
   useEffect(() => {
-    setUser(LocalStorage.getJSON('user'));
-    getWeights();
-  }, [])
+    LocalStorage.getJSON('user').then((data) => {
+      setUser(new User(data));
+    });
 
-  const addWeight = async (pounds: number) => {
-    const value = Math.round(pounds * 10) / 10
+    getWeights();
+  }, []);
+
+  const addWeight = async (kilos: number) => {
+    const value = Math.round(kilos * 10) / 10
     await Database.getInstance().run(
       `INSERT INTO weights (user_id, value) values (?, ?)`,
       [1, value]
@@ -56,13 +62,28 @@ export default function WeightComponent() {
     getWeights();
   }
 
-  const getWeights = async () => {
-    let result = await Database.getInstance().query(
-      `SELECT id, datetime(ts, 'localtime') as ts, value FROM weights`
+  const addWeightFromCSV = async (arr: any, pounds = true) => {
+    if(arr?.length == 0) { return; }
+    for(let i = 0; i < arr.length; i++) {
+      if(arr[i]?.length != 2) { return; }
+      let w = pounds ? arr[i][1] * KG : arr[i][1];
+      let p = arr[i][0].split('/');
+      let d = new Date(p[2], p[0] - 1, p[1]);
+      await Database.getInstance().run(
+        `INSERT INTO weights (user_id, value, ts) values (?, ?, ?)`,
+        [1, w, d.toISOString()]
+      );
+    }
+
+    getWeights();
+  }
+
+  const clearWeights = async () => {
+    await Database.getInstance().run(
+      `DELETE FROM weights`
     );
 
-    setWeights(result);
-    return result;
+    getWeights();
   }
 
   const deleteWeight = async (index: number) => {
@@ -73,7 +94,17 @@ export default function WeightComponent() {
     getWeights();
   }
 
-  const chartConfig = {
+  const getWeights = async (offset = 0, limit = 30) => {
+    let result = await Database.getInstance().query(
+      `SELECT id, datetime(ts, 'localtime') as ts, value FROM weights ORDER BY ts desc LIMIT ? OFFSET ?`,
+      [limit, offset]
+    );
+
+    setWeights(result);
+    return result;
+  }
+
+  const chartConfig: AbstractChartConfig = {
     backgroundColor: params?.graphBG ?? params?.style?.backgroundColor as string | undefined,
     backgroundGradientFrom: params?.graphGradientFrom ?? theme.colors.primary ?? "#fb8c00",
     backgroundGradientTo: params?.graphGradientTo ?? theme.colors.primary ?? "#ffa726",
@@ -91,24 +122,36 @@ export default function WeightComponent() {
     useShadowColorFromDataset: true
   }
 
-  const data = () => {
-    return {
+  const data = (): LineChartData => {
+    let tw = user?.getData()?.targetWeight;
+    let min = tw ? (useLb ? tw / KG : tw) : undefined;
+
+    const data: LineChartData = {
       labels: weights?.map(w => {
         let d = new Date(w.ts);
         return `${d.getMonth() + 1}/${d.getDate()}`;
-      }) ?? [],
+      }).reverse() ?? [],
       datasets: [
-        { data: weights?.map(w => useLb ? w.value : w.value as number * KG) as number[] ?? [] },
-        { data: [useLb ? 150 : 150 * KG], color: () => 'rgba(0,0,0,0)', strokeDashArray: [0, 1000], withDots: false, },
-        { data: [useLb ? 225 : 225 * KG], color: () => 'rgba(0,0,0,0)', strokeDashArray: [0, 1000], withDots: false, }
+        { data: weights?.map(w => useLb ? w.value as number / KG : w.value).reverse() as number[] ?? [] },
       ]
     }
+
+    if(min) {
+      data.datasets.push({
+        data: [min], 
+        color: () => 'rgba(0,0,0,0)', 
+        strokeDashArray: [0, 1000], 
+        withDots: false,
+      })
+    }
+
+    return data
   }
 
   const lineData = () => {
     return weights?.map((w) => {
       let obj = { ...w };
-      if(!useLb) { obj.value = obj.value as number * KG }
+      if(useLb) { obj.value = obj.value as number / KG }
       return obj;
     }) ?? [];
   }
@@ -139,14 +182,31 @@ export default function WeightComponent() {
   }
 
   const Chart = () => {
+    let d = data();
+    let show: number[] = [];
+
+    let t = 0, count = 5;
+    const length = d.labels.length;
+    for(let i = 0; i < length; i++) {
+      if(i == length - 1) {
+        continue;
+      } else if(i == Math.round(((length - 1) / (count - 1)) * t)) {
+        t += 1;
+        continue;
+      }
+
+      show.push(i)
+    }
+
     return (
       <LineChartComponent
-        data={data()}
+        data={d}
         width={Dimensions.get("window").width - chartViewPadding * 2} // from react-native
         height={Math.max(Dimensions.get("window").height / 4, 220)}
         chartConfig={chartConfig}
         style={styles.chart}
         bezier={params.bezier ?? true}
+        hidePointsAtIndex={show}
       />
     )
   }
@@ -154,13 +214,13 @@ export default function WeightComponent() {
   const Update = () => {
     return (
       <View style={styles.row}>
-      {/* <ImportModal onSubmit={addWeight} style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}>
-        <ThemedText style={{ fontWeight: 'bold' }}>Import Data</ThemedText>
-      </ImportModal> */}
-      <WeightModal style={styles.modalButton} addWeight={(pounds: number) => addWeight(pounds)} startLb={useLb}>
-        <ThemedText style={{ fontWeight: 'bold' }}>Add Entry</ThemedText>
-      </WeightModal>
-    </View>
+        <ImportModal onSubmit={addWeightFromCSV} style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}>
+          <ThemedText style={{ fontWeight: 'bold' }}>Import Data</ThemedText>
+        </ImportModal>
+        <WeightModal style={styles.modalButton} addWeight={(kilos: number) => addWeight(kilos)} startLb={useLb}>
+          <ThemedText style={{ fontWeight: 'bold' }}>Add Entry</ThemedText>
+        </WeightModal>
+      </View>
     )
   }
 
@@ -175,6 +235,11 @@ export default function WeightComponent() {
           listData={lineData()} 
           onDelete={deleteWeight}
         />
+        {/* {weights.length > 0 ? 
+        <Pressable onPress={clearWeights} style={{ ...styles.delete, backgroundColor: theme.colors.notification }}>
+          <ThemedText>Delete All</ThemedText>
+        </Pressable>
+        : <></>} */}
       </ThemedView>
     </ThemedSafeView>
   );
@@ -221,5 +286,11 @@ const styles = StyleSheet.create({
     padding: 5,
     minWidth: 40,
     textAlign: 'center'
+  },
+  delete: {
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });

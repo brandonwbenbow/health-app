@@ -5,6 +5,8 @@ import { useState } from "react";
 import { ThemedText } from "../ThemedText";
 import ModalBase from "./ModalBase";
 
+import { readString } from "react-native-csv";
+
 export type ImportModalProps = {
   transparent?: boolean,
   visible?: boolean,
@@ -17,6 +19,11 @@ export default function ImportModal(props: any) {
   const [modalVisible, setVisible] = useState<boolean>(props.visible ?? false);
   const theme = useTheme()
 
+  const results = (text: string) => {
+    let output = readString(text, {});
+    return output.data;
+  }
+
   return (
     <>
       <ModalBase
@@ -26,10 +33,9 @@ export default function ImportModal(props: any) {
       >
         <TextInput
           onSubmitEditing={(e) => {
-            props.onSubmit?.(e);
+            props.onSubmit?.(results(e.nativeEvent.text));
             setVisible(false);
           }}
-          keyboardType="numeric"
           style={{ 
             ...styles.input, 
             backgroundColor: theme.colors.card,
