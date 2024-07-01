@@ -14,7 +14,7 @@ import DataList from '@/components/DataList';
 import ImportModal from '@/components/modal/ImportModal';
 import WeightModal from '@/components/modal/WeightModal';
 import { KG } from '@/constants/Numbers';
-import { User } from '@/constants/User';
+import { Profile } from '@/constants/Profile';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 import { AbstractChartConfig } from 'react-native-chart-kit/dist/AbstractChart';
 
@@ -37,7 +37,7 @@ export default function WeightComponent() {
   const theme = useTheme();
 
   const [weights, setWeights] = useState<{ id: number, ts: any, value: Number }[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
   const [useLb, setUseLb] = useState<boolean>(true);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function WeightComponent() {
 
   useEffect(() => {
     LocalStorage.getJSON('user').then((data) => {
-      setUser(new User(data));
+      setUser(new Profile(data));
     });
 
     getWeights();
