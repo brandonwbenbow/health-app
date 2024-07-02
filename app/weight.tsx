@@ -17,9 +17,11 @@ import { KG } from '@/constants/Numbers';
 import { Profile } from '@/constants/Profile';
 import { LineChartData } from 'react-native-chart-kit/dist/line-chart/LineChart';
 import { AbstractChartConfig } from 'react-native-chart-kit/dist/AbstractChart';
+import WaitPage from '@/components/WaitPage';
 
 const chartViewPadding = 10;
 
+// useMemo to prevent large data render freezing... https://react.dev/reference/react/useMemo
 export type WeightComponentparams = {
   style?: ViewStyle,
   graphBG?: string,
@@ -36,6 +38,7 @@ export default function WeightComponent() {
   const nav = useNavigation();
   const theme = useTheme();
 
+  const [searchIndex, setSearchIndex] = useState<number>(0);
   const [weights, setWeights] = useState<{ id: number, ts: any, value: Number }[]>([]);
   const [user, setUser] = useState<Profile | null>(null);
   const [useLb, setUseLb] = useState<boolean>(true);
@@ -45,11 +48,12 @@ export default function WeightComponent() {
   }, [nav]);
 
   useEffect(() => {
-    LocalStorage.getJSON('user').then((data) => {
-      setUser(new Profile(data));
-    });
 
-    getWeights();
+    setTimeout(async () => {
+      setUser(new Profile(await LocalStorage.getJSON('user')));
+      await getWeights();
+    }, 250);
+    
   }, []);
 
   const addWeight = async (kilos: number) => {
@@ -94,13 +98,18 @@ export default function WeightComponent() {
     getWeights();
   }
 
-  const getWeights = async (offset = 0, limit = 30) => {
+  const getWeights = async (offset = 0, limit = weights?.length || 31) => {
     let result = await Database.getInstance().query(
       `SELECT id, datetime(ts, 'localtime') as ts, value FROM weights ORDER BY ts desc LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
-    setWeights(result);
+    if(offset > 0 && weights.length > 0) {
+      setWeights([...weights, ...result]);
+    } else {
+      setWeights(result);
+    }
+
     return result;
   }
 
@@ -119,7 +128,8 @@ export default function WeightComponent() {
       strokeWidth: "3",
       stroke: params?.lineStrockColor ?? "#ffffff44"
     },
-    useShadowColorFromDataset: true
+    useShadowColorFromDataset: true,
+    horizontalOffset: -20
   }
 
   const data = (): LineChartData => {
@@ -185,7 +195,7 @@ export default function WeightComponent() {
     let d = data();
     let show: number[] = [];
 
-    let t = 0, count = 5;
+    let t = 0, count = 3;
     const length = d.labels.length;
     for(let i = 0; i < length; i++) {
       if(i == length - 1) {
@@ -217,7 +227,7 @@ export default function WeightComponent() {
         <ImportModal onSubmit={addWeightFromCSV} style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}>
           <ThemedText style={{ fontWeight: 'bold' }}>Import Data</ThemedText>
         </ImportModal>
-        <WeightModal style={styles.modalButton} addWeight={(kilos: number) => addWeight(kilos)} startLb={useLb}>
+        <WeightModal initalValue={weights[weights.length - 1]?.value as number ?? 0} style={styles.modalButton} addWeight={(kilos: number) => addWeight(kilos)} startLb={useLb}>
           <ThemedText style={{ fontWeight: 'bold' }}>Add Entry</ThemedText>
         </WeightModal>
       </View>
@@ -228,18 +238,21 @@ export default function WeightComponent() {
     <ThemedSafeView style={{ ...styles.container, backgroundColor: theme.colors.primary }}>
       <Header />
       <ThemedView style={{ ...styles.view }}>
-        <Chart />
-        <Update />
-        <DataList
-          style={{ backgroundColor: theme.colors.primary }}
-          listData={lineData()} 
-          onDelete={deleteWeight}
-        />
-        {/* {weights.length > 0 ? 
-        <Pressable onPress={clearWeights} style={{ ...styles.delete, backgroundColor: theme.colors.notification }}>
-          <ThemedText>Delete All</ThemedText>
-        </Pressable>
-        : <></>} */}
+        <WaitPage wait={weights?.length > 0}>
+          <Chart />
+          <Update />
+          <DataList
+            style={{ backgroundColor: theme.colors.primary }}
+            listData={lineData()} 
+            onDelete={deleteWeight}
+            onScrollEnd={() => { getWeights(searchIndex + 7, 8); setSearchIndex(searchIndex + 8); }}
+          />
+          {/* {weights.length > 0 ? 
+          <Pressable onPress={clearWeights} style={{ ...styles.delete, backgroundColor: theme.colors.notification }}>
+            <ThemedText>Delete All</ThemedText>
+          </Pressable>
+          : <></>} */}
+          </WaitPage>
       </ThemedView>
     </ThemedSafeView>
   );

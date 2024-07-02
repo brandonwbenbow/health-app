@@ -13,7 +13,7 @@ export function LineChartComponent(props: LineChartComponentProps) {
   const theme = useTheme();
 
   return (
-    <View style={props.wrapperStyle}>
+    <View style={{ ...props.wrapperStyle }}>
       {
         props.data?.datasets?.length == 0 || props.data?.labels?.length == 0 ?
         <View style={styles.center}><ThemedText>No Data</ThemedText></View>

@@ -58,8 +58,7 @@ export default function SectionButton(props: SectionButtonProps) {
 
 const styles = StyleSheet.create({
   link: {
-    display: 'flex',
-    padding: 10
+    display: 'flex'
   },
   container: {
     padding: 25,

@@ -7,10 +7,12 @@ import ModalBase from "./ModalBase";
 import DatePicker from "react-native-date-picker";
 import { NumberModalProps } from "./NumberModal";
 import { KG } from "@/constants/Numbers";
+import SimpleNumberInput from "../SimpleNumberInput";
 
 export type WeightModalProps = NumberModalProps & {
   addWeight: Function,
-  startLb: boolean
+  startLb: boolean,
+  initalValue: number
 }
 
 export default function WeightModal(props: WeightModalProps) {
@@ -59,6 +61,11 @@ export default function WeightModal(props: WeightModalProps) {
               borderRadius: 10
             }}
           />
+          {/* <SimpleNumberInput
+            initialValue={props.initalValue}
+            width={150}
+            additionalAdder={10}
+          /> */}
           <View style={styles.toggle}>
             <Pressable onPress={() => setUseLb(true)} style={{ 
               ...styles.togglePill, 

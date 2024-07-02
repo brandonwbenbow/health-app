@@ -36,23 +36,25 @@ export default function AccountDisplaySection() {
   }, []);
 
   return (
-    <View style={{ ...styles.row, padding: 10, paddingTop: 20, paddingBottom: 0, minHeight: 140 }}>
-      <View style={{ flex: 2, gap: 10 }}>
-        <View style={{ ...styles.row, gap: 10, flexWrap: "wrap" }}>
+    <View style={{ minHeight: 140 }}>
+      <View style={{ ...styles.row, flex: 1, gap: 10 }}>
+        <View style={{ ...styles.row, flex: 1, padding: 20, gap: 10, flexWrap: "wrap" }}>
           <Ionicons name={state?.weight ? "scale" : "scale-outline"} size={15} color={theme.colors.text}/>
           <Ionicons name={state?.heart ? "heart" : "heart-outline"} size={15} color={theme.colors.text}/>
         </View>
-      </View>
-      <View style={{ justifyContent: "flex-end", alignItems: "flex-end", flex: 1 }}>
-        {/* <Ionicons name="person-outline" size={80} color={theme.colors.text}/> */}
         <SectionButton 
           href="/account" 
           title={user?.isValid() ? "Profile" : "Create Profile"} 
-          style={{ flex: 0, minHeight: 0, padding: 15, borderColor: theme.colors.text, borderWidth: 2, backgroundColor: "transparent" }}
+          style={{ flex: 0, minHeight: 0, minWidth: 100, padding: 15, borderColor: theme.colors.text, borderWidth: 2, backgroundColor: "transparent" }}
           textStyle={{ fontSize: 20, lineHeight: 25, flex: 1, textAlign: "center" }}
           linkStyle={{ flex: 0, padding: 0 }}
           align="center"
+          reverse
         />
+      </View>
+      <View style={{ alignItems: "flex-end", flex: 1 }}>
+        {/* <Ionicons name="person-outline" size={80} color={theme.colors.text}/> */}
+
       </View>
     </View>
   )

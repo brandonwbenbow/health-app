@@ -19,7 +19,9 @@ export type SimpleNumberInputProps = {
   style?: ViewStyle,
   max?: number,
   min?: number,
-  ref?: any
+  ref?: any,
+  onConversion?: (v: number) => number
+  decimalPoints?: number
 }
 
 const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: LegacyRef<Text> | undefined) => {
@@ -31,7 +33,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
   }, [props.initialValue])
 
   useEffect(() => {
-    onPress(value);
+    props.onPress?.(value);
   }, [value]);
 
   const onPress = (v: number) => {
@@ -53,7 +55,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
     },
     buttonRow: {
       flexDirection: 'row',
-      gap: 2
+      gap: 2,
     },
     valueText: {
       textAlign: 'center',
@@ -92,7 +94,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
       </View>
       <Text ref={ref} style={styles.valueText}>
         {props.prefix}
-        {value}
+        {props.onConversion?.(value) ?? value}
         {props.suffix}
       </Text>
       <View style={styles.buttonRow}>

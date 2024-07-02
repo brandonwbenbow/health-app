@@ -1,23 +1,21 @@
-import { StyleSheet, ScrollView, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 
 import SectionButton from '@/components/SectionButton';
 import ThemedSafeView from '@/components/ThemedSafeView';
 import AccountDisplaySection from '@/components/AccountDisplaySection';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 
 export default function HomeScreen() {
   return (
-    <ThemedSafeView style={{ ...styles.container }}>
-      <ScrollView style={{ flex: 1 }}>
-        <AccountDisplaySection />
-        <SectionButton href="/weight" title="Weight" icon="scale" style={{ backgroundColor: '#4c7efc' }} />
-        <SectionButton href="/heart" title="Heart" icon="heart" reverse style={{ backgroundColor: "#ed2f2f" }} />
+    <ThemedSafeView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1, padding: 10, gap: 10 }}>
+        <View style={{ gap: 10 }}>
+          <AccountDisplaySection />
+          <SectionButton href="/weight" title="Weight" icon="scale" style={{ backgroundColor: '#4c7efc' }} />
+          <SectionButton href="/heart" title="Heart" icon="heart" reverse style={{ backgroundColor: '#ed2f2f' }} />
+        </View>
       </ScrollView>
     </ThemedSafeView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  }
-});

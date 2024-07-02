@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View, ViewStyle } from "react-native"
+import { NativeScrollEvent, Pressable, ScrollView, StyleSheet, View, ViewStyle } from "react-native"
 import { ThemedText } from "./ThemedText"
 import { ThemedView } from "./ThemedView"
 import { Ionicons } from "@expo/vector-icons"
@@ -9,7 +9,8 @@ import { useState } from "react"
 export type DataListProps = {
   onDelete: (index: number) => void,
   listData?: { [field: string]: any }[],
-  style?: ViewStyle
+  style?: ViewStyle,
+  onScrollEnd?: () => void
 }
 
 export default function DataList(props: DataListProps) {
@@ -29,13 +30,24 @@ export default function DataList(props: DataListProps) {
     setModalData({ visible: false })
   }
 
+  const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+    const paddingToBottom = 20;
+    return layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom;
+  }
+
   return (
-    <ScrollView>
-    <ConfirmModal 
-      style={props.style} 
-      visible={modalData.visible} 
-      report={`Deleting Entry for ${getShortDate(modalData.data?.ts)}: ${modalData.data?.value}`} 
-      response={onConfirmDelete} />
+    <ScrollView onScroll={(e) => {
+      if(isCloseToBottom(e.nativeEvent)) {
+        props.onScrollEnd?.();
+      }
+    }}>
+      <ConfirmModal 
+        style={props.style} 
+        visible={modalData.visible} 
+        report={`Deleting Entry for ${getShortDate(modalData.data?.ts)}: ${modalData.data?.value}`} 
+        response={onConfirmDelete} 
+      />
       {
         props.listData?.map((d, i) => {
           let topRadius = i == 0 ? 10 : 0;
@@ -89,13 +101,13 @@ const styles = StyleSheet.create({
     padding: 10
   },
   rowHeader: {
-    flex: 1,
+    flex: 2,
     flexShrink: 0,
     textAlign: 'center',
     backgroundColor: '#ffffff11'
   },
   rowText: {
-    flex: 7,
+    flex: 9,
     fontWeight: 'bold'
   },
   delete: {
