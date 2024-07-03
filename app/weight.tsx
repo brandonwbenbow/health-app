@@ -22,7 +22,7 @@ import WaitPage from '@/components/WaitPage';
 const chartViewPadding = 10;
 
 // useMemo to prevent large data render freezing... https://react.dev/reference/react/useMemo
-export type WeightComponentparams = {
+export type WeightPageParams = {
   style?: ViewStyle,
   graphBG?: string,
   graphGradientFrom?: string,
@@ -33,8 +33,8 @@ export type WeightComponentparams = {
   bezier?: boolean
 }
 
-export default function WeightComponent() {
-  const params: WeightComponentparams = useLocalSearchParams();
+export default function WeightPage() {
+  const params: WeightPageParams = useLocalSearchParams();
   const nav = useNavigation();
   const theme = useTheme();
 
@@ -267,14 +267,6 @@ export default function WeightComponent() {
             onDelete={deleteWeight}
             onScrollEnd={() => { getWeights(searchIndex + 7, 8); setSearchIndex(searchIndex + 8); }}
           />
-          {
-            // DataList({ 
-            //   listData: getLineData, 
-            //   onDelete: deleteWeight, 
-            //   onScrollEnd: () => { getWeights(searchIndex + 7, 8); setSearchIndex(searchIndex + 8); } ,
-            //   style: {backgroundColor: theme.colors.primary} 
-            // })
-          }
           {/* {weights.length > 0 ? 
           <Pressable onPress={clearWeights} style={{ ...styles.delete, backgroundColor: theme.colors.notification }}>
             <ThemedText>Delete All</ThemedText>

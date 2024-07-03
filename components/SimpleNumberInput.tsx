@@ -16,6 +16,7 @@ export type SimpleNumberInputProps = {
   onPress?: (value: number) => void,
   additionalAdder?: number,
   withEffect?: boolean,
+  horizontal?: boolean,
   style?: ViewStyle,
   max?: number,
   min?: number,
@@ -46,7 +47,8 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
       padding: 10,
       justifyContent: 'center',
       alignItems: 'center',
-      flex: 1
+      flex: 1,
+      minWidth: props.horizontal ? 40 : 0
     },
     buttonText: {
       fontSize: 20,
@@ -68,28 +70,39 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
   })
 
   return (
-    <View style={{ ...props.style, height: props.height, width: props.width }}>
+    <View style={{ ...props.style, height: props.height, width: props.width, flexDirection: props.horizontal ? "row" : "column" }}>
       <View style={styles.buttonRow}>
         <Pressable 
           onPress={(e) => { e.stopPropagation(); onPress(value + 1); }}
           style={{ 
             borderTopLeftRadius: props.borderRadius ?? 10, 
-            borderTopRightRadius: props.additionalAdder ? 0 : props.borderRadius ?? 10,
+            borderTopRightRadius: props.horizontal ? 0 : props.additionalAdder ? 0 : props.borderRadius ?? 10,
+            borderBottomLeftRadius: props.horizontal ? props.borderRadius ?? 10 : 0,
             ...styles.button
           }}
         >
-            {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+</ThemedText> */}
+          {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+</ThemedText> */}
+          {
+            props.horizontal ?
+            <Feather name="chevron-left" size={24} color={theme.dark ? 'white' : 'black'} />
+            :
             <Feather name="chevron-up" size={24} color={theme.dark ? 'white' : 'black'} />
+          } 
         </Pressable>
         { props.additionalAdder ? <Pressable 
           onPress={(e) => { e.stopPropagation(); onPress(value + (props.additionalAdder ?? 0)); }}
           style={{ 
-            borderTopRightRadius: props.borderRadius ?? 10,
+            borderTopRightRadius: props.horizontal ? 0 : props.borderRadius ?? 10,
             ...styles.button
           }}
         >
-            {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+ {props.additionalAdder}</ThemedText> */}
+          {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+ {props.additionalAdder}</ThemedText> */}
+          {
+            props.horizontal ?
+            <Feather name="chevrons-left" size={24} color={theme.dark ? 'white' : 'black'} />
+            :
             <Feather name="chevrons-up" size={24} color={theme.dark ? 'white' : 'black'} />
+          } 
         </Pressable> : <></> }
       </View>
       <Text ref={ref} style={styles.valueText}>
@@ -101,23 +114,35 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
         <Pressable
           onPress={(e) => { e.stopPropagation(); onPress(value - 1); }}
           style={{ 
-            borderBottomLeftRadius: props.borderRadius ?? 10,
+            borderBottomLeftRadius: props.horizontal ? 0 : props.borderRadius ?? 10,
             borderBottomRightRadius: props.additionalAdder ? 0 : props.borderRadius ?? 10,
             ...styles.button
           }}
         >
           {/* <ThemedText numberOfLines={1} style={styles.buttonText}>-</ThemedText> */}
-          <Feather name="chevron-down" size={24} color={theme.dark ? 'white' : 'black'} />
+          
+          {
+            props.horizontal ?
+            <Feather name="chevron-right" size={24} color={theme.dark ? 'white' : 'black'} />
+            :
+            <Feather name="chevron-down" size={24} color={theme.dark ? 'white' : 'black'} />
+          } 
         </Pressable>
         { props.additionalAdder ? <Pressable 
           onPress={(e) => { e.stopPropagation(); onPress(value - (props.additionalAdder ?? 0)); }}
           style={{ 
             borderBottomRightRadius: props.borderRadius ?? 10,
+            borderTopRightRadius: props.horizontal ? props.borderRadius ?? 10 : 0, 
             ...styles.button
           }}
         >
-            {/* <ThemedText numberOfLines={1} style={styles.buttonText}>- 10</ThemedText> */}
+          {/* <ThemedText numberOfLines={1} style={styles.buttonText}>- 10</ThemedText> */}
+          {
+            props.horizontal ?
+            <Feather name="chevrons-right" size={24} color={theme.dark ? 'white' : 'black'} />
+            :
             <Feather name="chevrons-down" size={24} color={theme.dark ? 'white' : 'black'} />
+          }  
         </Pressable> : <></> }
       </View>
     </View>

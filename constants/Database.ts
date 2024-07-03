@@ -24,7 +24,29 @@ export class Database {
     await this.db?.execAsync(`
       CREATE TABLE IF NOT EXISTS weights (
         id INTEGER PRIMARY KEY,
-        user_id INTEGER,
+        user_id INTEGER DEFAULT 0,
+        value REAL,
+        ts DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS bloodpressures (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER DEFAULT 0,
+        lower_value REAL,
+        upper_value, REAL,
+        ts DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS drinks (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER DEFAULT 0,
+        value REAL,
+        ts DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS sleep_hours (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER DEFAULT 0,
         value REAL,
         ts DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -41,6 +63,68 @@ export class Database {
     if (!this.init) { await this.configure(); }
     if (this.db == null) { return defaultValue; }
     return this.db?.getAllAsync(source, params);
+  }
+
+  async getLatestTimestampFromAllTables() {
+    let q = (table: string) => {
+      return `SELECT datetime(ts, 'localtime') as ts FROM ${table} WHERE DATE(ts, 'localtime') = DATE('now', 'localtime')`;
+    }
+
+    let queries = [
+      this.query(q('weights')),
+      this.query(q('bloodpressures')),
+      this.query(q('drinks')),
+      this.query(q('sleep_hours'))
+    ];
+
+    return await Promise.all(queries)
+  }
+
+  async getLastWeekForAllTables() {
+    let q = (table: string) => {
+      return `
+        SELECT datetime(ts, 'localtime') as ts FROM ${table} 
+        WHERE ts BETWEEN datetime('now', 'localtime', '-6 days') AND datetime('now', 'localtime', '+1 days')
+      `;
+    }
+
+    let queries = [
+      this.query(q('weights')),
+      this.query(q('bloodpressures')),
+      this.query(q('drinks')),
+      this.query(q('sleep_hours'))
+    ];
+
+    let results = await Promise.all(queries);
+    const dates = [
+      new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      new Date(Date.now())
+    ]
+
+    const getMap = (arr: {ts: any}[]) => {
+      let map = arr.map(({ ts }) => {
+        let d = new Date(ts);
+        return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}` 
+      });
+
+      let days = dates.map((d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
+      
+      return days.map((d: string) => map.includes(d));
+    }
+
+    let obj = {
+      weight: getMap(results[0]),
+      heart: getMap(results[1]),
+      water: getMap(results[2]),
+      sleep: getMap(results[3])
+    }
+
+    return obj;
   }
 }
 
