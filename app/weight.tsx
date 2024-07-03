@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Dimensions, ViewStyle, View, Pressable } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 
@@ -39,7 +39,7 @@ export default function WeightComponent() {
   const theme = useTheme();
 
   const [searchIndex, setSearchIndex] = useState<number>(0);
-  const [weights, setWeights] = useState<{ id: number, ts: any, value: Number }[]>([]);
+  const [weights, setWeights] = useState<{ id: number, ts: any, pounds: Number, kilos: Number }[]>([]);
   const [user, setUser] = useState<Profile | null>(null);
   const [useLb, setUseLb] = useState<boolean>(true);
 
@@ -57,10 +57,9 @@ export default function WeightComponent() {
   }, []);
 
   const addWeight = async (kilos: number) => {
-    const value = Math.round(kilos * 10) / 10
     await Database.getInstance().run(
       `INSERT INTO weights (user_id, value) values (?, ?)`,
-      [1, value]
+      [1, kilos]
     );
 
     getWeights();
@@ -93,7 +92,7 @@ export default function WeightComponent() {
   const deleteWeight = async (index: number) => {
     await Database.getInstance().run(
       `DELETE FROM weights WHERE id = ?`, [weights[index].id]
-    )
+    );
 
     getWeights();
   }
@@ -104,13 +103,22 @@ export default function WeightComponent() {
       [limit, offset]
     );
 
+    let calc = result.map((r: {id: any, ts: any, value: any}) => {
+      return {
+        id: r.id,
+        ts: r.ts,
+        kilos: r.value,
+        pounds: r.value / KG
+      }
+    });
+
     if(offset > 0 && weights.length > 0) {
-      setWeights([...weights, ...result]);
+      setWeights([...weights, ...calc]);
     } else {
-      setWeights(result);
+      setWeights(calc);
     }
 
-    return result;
+    return calc;
   }
 
   const chartConfig: AbstractChartConfig = {
@@ -142,7 +150,7 @@ export default function WeightComponent() {
         return `${d.getMonth() + 1}/${d.getDate()}`;
       }).reverse() ?? [],
       datasets: [
-        { data: weights?.map(w => useLb ? w.value as number / KG : w.value).reverse() as number[] ?? [] },
+        { data: weights?.map(w => useLb ? w.pounds : w.kilos).reverse() as number[] ?? [] },
       ]
     }
 
@@ -157,14 +165,18 @@ export default function WeightComponent() {
 
     return data
   }
+  const getData = useMemo(data, [weights, useLb]);
 
   const lineData = () => {
     return weights?.map((w) => {
-      let obj = { ...w };
-      if(useLb) { obj.value = obj.value as number / KG }
-      return obj;
+      return {
+        id: w.id,
+        ts: w.ts,
+        value: useLb ? w.pounds : w.kilos
+      }
     }) ?? [];
   }
+  const getLineData = useMemo(lineData, [weights, useLb]); 
 
   const Header = () => {
     return (
@@ -191,12 +203,10 @@ export default function WeightComponent() {
     )
   }
 
-  const Chart = () => {
-    let d = data();
+  const Shows = () => {
     let show: number[] = [];
-
     let t = 0, count = 3;
-    const length = d.labels.length;
+    const length = getData.labels.length;
     for(let i = 0; i < length; i++) {
       if(i == length - 1) {
         continue;
@@ -207,19 +217,24 @@ export default function WeightComponent() {
 
       show.push(i)
     }
+    return show;
+  }
+  const getShows = useMemo(Shows, [getData]);
 
+  const Chart = () => {
     return (
       <LineChartComponent
-        data={d}
+        data={getData}
         width={Dimensions.get("window").width - chartViewPadding * 2} // from react-native
         height={Math.max(Dimensions.get("window").height / 4, 220)}
         chartConfig={chartConfig}
         style={styles.chart}
         bezier={params.bezier ?? true}
-        hidePointsAtIndex={show}
+        hidePointsAtIndex={getShows}
       />
     )
   }
+  const getChart = useMemo(Chart, [getData]);
 
   const Update = () => {
     return (
@@ -227,7 +242,12 @@ export default function WeightComponent() {
         <ImportModal onSubmit={addWeightFromCSV} style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}>
           <ThemedText style={{ fontWeight: 'bold' }}>Import Data</ThemedText>
         </ImportModal>
-        <WeightModal initalValue={weights[weights.length - 1]?.value as number ?? 0} style={styles.modalButton} addWeight={(kilos: number) => addWeight(kilos)} startLb={useLb}>
+        <WeightModal 
+          initalValue={weights[0]?.kilos as number ?? 0} 
+          style={styles.modalButton} 
+          addWeight={(kilos: number) => addWeight(kilos)} 
+          startLb={useLb}
+        >
           <ThemedText style={{ fontWeight: 'bold' }}>Add Entry</ThemedText>
         </WeightModal>
       </View>
@@ -239,14 +259,22 @@ export default function WeightComponent() {
       <Header />
       <ThemedView style={{ ...styles.view }}>
         <WaitPage wait={weights?.length > 0}>
-          <Chart />
+          {getChart}
           <Update />
           <DataList
             style={{ backgroundColor: theme.colors.primary }}
-            listData={lineData()} 
+            listData={getLineData} 
             onDelete={deleteWeight}
             onScrollEnd={() => { getWeights(searchIndex + 7, 8); setSearchIndex(searchIndex + 8); }}
           />
+          {
+            // DataList({ 
+            //   listData: getLineData, 
+            //   onDelete: deleteWeight, 
+            //   onScrollEnd: () => { getWeights(searchIndex + 7, 8); setSearchIndex(searchIndex + 8); } ,
+            //   style: {backgroundColor: theme.colors.primary} 
+            // })
+          }
           {/* {weights.length > 0 ? 
           <Pressable onPress={clearWeights} style={{ ...styles.delete, backgroundColor: theme.colors.notification }}>
             <ThemedText>Delete All</ThemedText>

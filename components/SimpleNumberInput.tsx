@@ -71,7 +71,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
     <View style={{ ...props.style, height: props.height, width: props.width }}>
       <View style={styles.buttonRow}>
         <Pressable 
-          onPress={() => { onPress(value + 1); }}
+          onPress={(e) => { e.stopPropagation(); onPress(value + 1); }}
           style={{ 
             borderTopLeftRadius: props.borderRadius ?? 10, 
             borderTopRightRadius: props.additionalAdder ? 0 : props.borderRadius ?? 10,
@@ -82,7 +82,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
             <Feather name="chevron-up" size={24} color={theme.dark ? 'white' : 'black'} />
         </Pressable>
         { props.additionalAdder ? <Pressable 
-          onPress={() => { onPress(value + (props.additionalAdder ?? 0)); }}
+          onPress={(e) => { e.stopPropagation(); onPress(value + (props.additionalAdder ?? 0)); }}
           style={{ 
             borderTopRightRadius: props.borderRadius ?? 10,
             ...styles.button
@@ -99,7 +99,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
       </Text>
       <View style={styles.buttonRow}>
         <Pressable
-          onPress={() => { onPress(value - 1); }}
+          onPress={(e) => { e.stopPropagation(); onPress(value - 1); }}
           style={{ 
             borderBottomLeftRadius: props.borderRadius ?? 10,
             borderBottomRightRadius: props.additionalAdder ? 0 : props.borderRadius ?? 10,
@@ -110,7 +110,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
           <Feather name="chevron-down" size={24} color={theme.dark ? 'white' : 'black'} />
         </Pressable>
         { props.additionalAdder ? <Pressable 
-          onPress={() => { onPress(value - (props.additionalAdder ?? 0)); }}
+          onPress={(e) => { e.stopPropagation(); onPress(value - (props.additionalAdder ?? 0)); }}
           style={{ 
             borderBottomRightRadius: props.borderRadius ?? 10,
             ...styles.button

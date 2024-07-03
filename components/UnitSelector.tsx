@@ -2,6 +2,7 @@ import { DimensionValue, Pressable, StyleSheet, View, ViewStyle } from "react-na
 import { ThemedText } from "./ThemedText"
 import { useEffect, useState } from "react"
 import React from "react"
+import { useTheme } from "@react-navigation/native"
 
 export type UnitSelectorProps = {
   unitList: string[],
@@ -16,6 +17,7 @@ export type UnitSelectorProps = {
 }
 
 export default function UnitSelector(props: UnitSelectorProps) {
+  const theme = useTheme();
   const [index, setIndex] = useState<number>(
     props.initialIndex && props.initialIndex <= props.unitList?.length - 1 ? props.initialIndex : 0
   );
@@ -33,17 +35,29 @@ export default function UnitSelector(props: UnitSelectorProps) {
       ...props.style, 
       height: props.height, 
       width: props.width, 
-      gap: 10, 
+      gap: props.textOnly ? 10 : 0, 
       flexDirection: 'row', 
       alignItems: 'center'
-    }
+    },
   });
 
   return (
     <View style={styles.container}>
       {props.unitList.map((u, i) =>
         <React.Fragment key={i}>
-          <Pressable onPress={() => { setIndex(i); props.onPress?.(i); }}>
+          <Pressable 
+            style={{
+              flex: props.textOnly ? 0 : 1,
+              justifyContent: "center",
+              alignItems: "center",
+              padding: props.textOnly ? 0 : 10,
+              borderTopLeftRadius: i == 0 ? 10 : 0,
+              borderBottomLeftRadius: i == 0 ? 10 : 0,
+              borderTopRightRadius: i == props.unitList.length - 1 ? 10 : 0,
+              borderBottomRightRadius: i == props.unitList.length - 1 ? 10 : 0,
+              backgroundColor: !props.textOnly ? index == i ? theme.colors.primary : theme.colors.card : 'transparent'
+            }}
+            onPress={() => { setIndex(i); props.onPress?.(i); }}>
             <ThemedText style={{ ...styles.text, opacity: index == i ? 1 : 0.5 }}>{u}</ThemedText>
           </Pressable>
           { props.textOnly && i < props.unitList.length - 1 ? 

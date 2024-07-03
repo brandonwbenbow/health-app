@@ -23,7 +23,7 @@ export default function DataList(props: DataListProps) {
   }
 
   const onConfirmDelete = (yes: boolean) => {
-    if(yes && modalData.index != null) {
+    if(yes && typeof(modalData.index) == 'number') {
       props.onDelete(modalData.index);
     }
 

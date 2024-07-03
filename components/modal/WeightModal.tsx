@@ -8,6 +8,7 @@ import DatePicker from "react-native-date-picker";
 import { NumberModalProps } from "./NumberModal";
 import { KG } from "@/constants/Numbers";
 import SimpleNumberInput from "../SimpleNumberInput";
+import UnitSelector from "../UnitSelector";
 
 export type WeightModalProps = NumberModalProps & {
   addWeight: Function,
@@ -19,17 +20,27 @@ export default function WeightModal(props: WeightModalProps) {
   const [modalVisible, setVisible] = useState<boolean>(props.visible ?? false);
   const [useLb, setUseLb] = useState<boolean>(props.startLb);
 
+  const [value, setValue] = useState<number>(0);
+  const [decimal, setDecimal] = useState<number>(0);
+
   const theme = useTheme();
 
-  const onSubmit = (e: any) => {
-    let value = Number(e.nativeEvent.text);
-    if(useLb) { value = value * KG }
-    props.addWeight(value);
+  const onSubmit = () => {
+    let num = Number(value + decimal / 10);
+    if(useLb) { num = num * KG }
+    props.addWeight(num);
   }
 
   useEffect(() => {
     setUseLb(props.startLb);
   }, [props.startLb])
+
+  useEffect(() => {
+    let initial = props.startLb ? props.initalValue / KG : props.initalValue;
+    let value = Math.floor(initial);
+    setValue(value);
+    setDecimal(Math.round((initial - value) * 10));
+  }, [props.initalValue, props.startLb]);
 
   return (
     <>
@@ -38,7 +49,9 @@ export default function WeightModal(props: WeightModalProps) {
         visible={modalVisible}
         onRequestClose={() => { setVisible(false) }}
       >
-        <View style={{ gap: 20, padding: 20, backgroundColor: '#000000aa', borderRadius: 10 }}>
+        <Pressable 
+          onPress={(e) => { e.stopPropagation(); }}
+          style={{ gap: 20, padding: 20, backgroundColor: theme.colors.background, borderRadius: 10 }}>
           {/* <DatePicker
             date={date}
             onDateChange={setDate}
@@ -46,45 +59,42 @@ export default function WeightModal(props: WeightModalProps) {
             theme={theme.dark ? 'dark' : 'light'}
             dividerColor={theme.colors.primary}
           /> */}
-          <TextInput
-            placeholder="0"
-            placeholderTextColor={theme.colors.text}
-            onSubmitEditing={(e) => {
-              onSubmit(e);
-              setVisible(false);
-            }}
-            keyboardType="numeric"
-            style={{ 
-              ...styles.input, 
-              color: theme.colors.text,
-              backgroundColor: theme.colors.card,
-              borderRadius: 10
-            }}
+          <View style={{ flexDirection: "row", gap: 3 }}>
+            <SimpleNumberInput
+              initialValue={value}
+              width={100}
+              additionalAdder={10}
+              onPress={setValue}
+            />
+            <SimpleNumberInput
+              initialValue={decimal}
+              width={50}
+              prefix="."
+              max={9}
+              onPress={setDecimal}
+            />
+          </View>
+          <UnitSelector 
+            unitList={["LB", "KG"]}
+            initialIndex={useLb ? 0 : 1}
+            onPress={(index) => setUseLb(index == 0)}
           />
-          {/* <SimpleNumberInput
-            initialValue={props.initalValue}
-            width={150}
-            additionalAdder={10}
-          /> */}
-          <View style={styles.toggle}>
-            <Pressable onPress={() => setUseLb(true)} style={{ 
-              ...styles.togglePill, 
-              backgroundColor: useLb ? theme.colors.primary : theme.colors.card,
-              borderTopLeftRadius: 10,
-              borderBottomLeftRadius: 10,
-            }}>
-              <ThemedText>LB</ThemedText>
-            </Pressable>
-            <Pressable onPress={() => setUseLb(false)} style={{ 
-              ...styles.togglePill,
-              backgroundColor: !useLb ? theme.colors.primary : theme.colors.card,
-              borderTopRightRadius: 10,
-              borderBottomRightRadius: 10
-            }}>
-              <ThemedText>KG</ThemedText>
+          <View style={{ flexDirection: "row" }}>
+            <Pressable 
+              style={{ 
+                flex: 1,
+                padding: 10,
+                borderRadius: 10,
+                justifyContent: "center", 
+                alignItems: "center",
+                backgroundColor: theme.colors.primary
+              }}
+              onPress={() => { onSubmit() }}
+            >
+              <ThemedText>Submit</ThemedText>
             </Pressable>
           </View>
-        </View>
+        </Pressable>
       </ModalBase>
       <Pressable style={{ ...props.style, backgroundColor: theme.colors.primary }} onPress={() => setVisible(true)}>
         {props.children}
