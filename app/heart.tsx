@@ -70,7 +70,12 @@ export default function HeartPage() {
   }
 
   const addPressure = async (upper: number, lower: number) => {
+    await Database.getInstance().run(
+      `INSERT INTO bloodpressures (user_id, upper_value, lower_value) values (?, ?, ?)`,
+      [1, upper, lower]
+    );
 
+    getPressures(undefined, pressures?.length + 1);
   }
 
   const deletePressure = async (index: number) => {
@@ -118,8 +123,8 @@ export default function HeartPage() {
       datasets: [
         { data: pressures?.map(p => p.lower).reverse() as number[] ?? [] },
         { data: pressures?.map(p => p.upper).reverse() as number[] ?? [] },
-        { data: [120], color: () => ``, strokeDashArray: [0, 1000], withDots: false },
-        { data: [140], color: () => ``, strokeDashArray: [0, 1000], withDots: false }
+        // { data: [120], color: () => `rgba(0,1,0,0.5)`, strokeDashArray: [0, 1000], withDots: false },
+        // { data: [140], color: () => `rgba(1,0,0,0.5)`, strokeDashArray: [0, 1000], withDots: false }
       ]
     }
 
@@ -145,15 +150,26 @@ export default function HeartPage() {
   }
   const getShows = useMemo(Shows, [getData]);
 
+  const lineData = () => {
+    return pressures?.map((p) => {
+      return {
+        id: p.id,
+        ts: p.ts,
+        value: [p.upper, p.lower]
+      }
+    }) ?? [];
+  }
+  const getLineData = useMemo(lineData, [pressures]);
+
   const Update = () => {
     return (
       <View style={styles.row}>
-        <ImportModal
+        {/* <ImportModal
           onSubmit={(v: any) => { console.log("Imported Pressures:", v) }} 
           style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}
         >
           <ThemedText style={{ fontWeight: 'bold' }}>Import Data</ThemedText>
-        </ImportModal>
+        </ImportModal> */}
         <PressureModal 
           initalValue={{ upper: pressures[0]?.upper, lower: pressures[0]?.lower }} 
           style={styles.modalButton} 
@@ -168,7 +184,7 @@ export default function HeartPage() {
   return (
     <ThemedSafeView style={{ ...styles.container, backgroundColor: theme.colors.primary }}>
       <Header />
-      <ThemedView style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ThemedView style={{ flex: 1, gap: 10, padding: chartViewPadding, justifyContent: "center", alignItems: "center" }}>
         <WaitPage wait={loaded}>
           <LineChartComponent
             data={getData}
@@ -182,7 +198,7 @@ export default function HeartPage() {
           <Update />
           <DataList
             style={{ backgroundColor: theme.colors.primary }}
-            listData={pressures} 
+            listData={getLineData} 
             onDelete={deletePressure}
             onScrollEnd={() => { getPressures(searchIndex + 7, 8); setSearchIndex(searchIndex + 8); }}
           />

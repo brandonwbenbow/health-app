@@ -4,7 +4,7 @@ import { ThemedView } from "./ThemedView"
 import { Ionicons } from "@expo/vector-icons"
 import { useTheme } from "@react-navigation/native"
 import ConfirmModal from "./modal/ConfirmModal"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export type DataListProps = {
   onDelete: (index: number) => void,
@@ -55,7 +55,7 @@ export default function DataList(props: DataListProps) {
 
           return (
             <View key={i} style={{ 
-              ...styles.row, 
+              ...styles.row,
               ...(i % 2 ? styles.oddRow : {}),
               borderTopLeftRadius: topRadius, 
               borderTopRightRadius: topRadius, 
@@ -70,14 +70,26 @@ export default function DataList(props: DataListProps) {
               }}>
                 {getShortDate(d.ts)}
               </ThemedText>
-              <ThemedText style={{ 
-                ...styles.text, 
-                ...styles.rowText,
-                borderTopRightRadius: topRadius, 
-                borderBottomRightRadius: bottomRadius 
-              }}>
-                {Math.round(d.value * 10) / 10}
-              </ThemedText>
+              {
+                Array.isArray(d.value) ? 
+                <>
+                {
+                  d.value.map((v, i) =>                   
+                  <ThemedText key={i} style={{ 
+                    ...styles.text, 
+                    ...styles.rowText, 
+                    flex: styles.rowText.flex / d.value.length,
+                    ...(i % 2 ? styles.oddRow : [])
+                  }}>
+                    {v}
+                  </ThemedText>)
+                }
+                </>
+                :
+                <ThemedText style={{ ...styles.text, ...styles.rowText }}>
+                  {Math.round(d.value * 10) / 10}
+                </ThemedText>
+              }
               <Pressable style={styles.delete} onPress={() => setModalData({ visible: true, index: i, data: d }) }>
                 <Ionicons name="trash" color={theme.colors.text} size={20} />
               </Pressable>
@@ -92,7 +104,8 @@ export default function DataList(props: DataListProps) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    flex: 1
+    flex: 1,
+    minWidth: '100%'
   },
   oddRow: {
     backgroundColor: '#ffffff11'
@@ -108,7 +121,8 @@ const styles = StyleSheet.create({
   },
   rowText: {
     flex: 9,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: "center"
   },
   delete: {
     padding: 10,

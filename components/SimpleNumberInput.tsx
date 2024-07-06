@@ -44,11 +44,11 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
   const styles = StyleSheet.create({
     button: {
       backgroundColor: theme.colors.primary,
-      padding: 10,
+      padding: props.horizontal ? 0 : 10,
       justifyContent: 'center',
       alignItems: 'center',
-      flex: 1,
-      minWidth: props.horizontal ? 40 : 0
+      flex: props.horizontal ? 0 : 1,
+      minWidth: props.horizontal ? 30 : 0
     },
     buttonText: {
       fontSize: 20,
@@ -65,45 +65,55 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
       fontSize: props.fontSize ?? 30,
       padding: 10,
       paddingTop: (props.fontSize ?? 30) * 0.2 + 10,
-      color: theme.colors.text
+      color: theme.colors.text,
+      flex: props.horizontal ? 1 : 0
     }
   })
+
+  const firstPressableSection = () => {
+    let content = [
+      <Pressable 
+        onPress={(e) => { e.stopPropagation(); onPress(value + (props.horizontal ? -1 : 1)); }}
+        style={{ 
+          borderTopLeftRadius: props.horizontal ? 0 : props.borderRadius ?? 10, 
+          borderTopRightRadius: props.additionalAdder ? 0 : props.borderRadius ?? 10,
+          ...styles.button
+        }}
+      >
+        {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+</ThemedText> */}
+        {
+          props.horizontal ?
+          <Feather name="chevron-left" size={24} color={theme.dark ? 'white' : 'black'} />
+          :
+          <Feather name="chevron-up" size={24} color={theme.dark ? 'white' : 'black'} />
+        } 
+      </Pressable>,
+      props.additionalAdder ? <Pressable 
+        onPress={(e) => { e.stopPropagation(); let v = props.additionalAdder ?? 0; onPress(value + (props.horizontal ? v * -1 : v)); }}
+        style={{ 
+          borderTopRightRadius: props.horizontal ? 0 : props.borderRadius ?? 10,
+          borderTopLeftRadius: props.horizontal ? props.borderRadius ?? 10 : 0,
+          borderBottomLeftRadius: props.horizontal ? props.borderRadius ?? 10 : 0,
+          ...styles.button
+        }}
+      >
+        {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+ {props.additionalAdder}</ThemedText> */}
+        {
+          props.horizontal ?
+          <Feather name="chevrons-left" size={24} color={theme.dark ? 'white' : 'black'} />
+          :
+          <Feather name="chevrons-up" size={24} color={theme.dark ? 'white' : 'black'} />
+        } 
+      </Pressable> : <></>
+    ];
+
+    return props.horizontal ? content.reverse() : content;
+  }
 
   return (
     <View style={{ ...props.style, height: props.height, width: props.width, flexDirection: props.horizontal ? "row" : "column" }}>
       <View style={styles.buttonRow}>
-        <Pressable 
-          onPress={(e) => { e.stopPropagation(); onPress(value + 1); }}
-          style={{ 
-            borderTopLeftRadius: props.borderRadius ?? 10, 
-            borderTopRightRadius: props.horizontal ? 0 : props.additionalAdder ? 0 : props.borderRadius ?? 10,
-            borderBottomLeftRadius: props.horizontal ? props.borderRadius ?? 10 : 0,
-            ...styles.button
-          }}
-        >
-          {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+</ThemedText> */}
-          {
-            props.horizontal ?
-            <Feather name="chevron-left" size={24} color={theme.dark ? 'white' : 'black'} />
-            :
-            <Feather name="chevron-up" size={24} color={theme.dark ? 'white' : 'black'} />
-          } 
-        </Pressable>
-        { props.additionalAdder ? <Pressable 
-          onPress={(e) => { e.stopPropagation(); onPress(value + (props.additionalAdder ?? 0)); }}
-          style={{ 
-            borderTopRightRadius: props.horizontal ? 0 : props.borderRadius ?? 10,
-            ...styles.button
-          }}
-        >
-          {/* <ThemedText numberOfLines={1} style={styles.buttonText}>+ {props.additionalAdder}</ThemedText> */}
-          {
-            props.horizontal ?
-            <Feather name="chevrons-left" size={24} color={theme.dark ? 'white' : 'black'} />
-            :
-            <Feather name="chevrons-up" size={24} color={theme.dark ? 'white' : 'black'} />
-          } 
-        </Pressable> : <></> }
+        {firstPressableSection()}
       </View>
       <Text ref={ref} style={styles.valueText}>
         {props.prefix}
@@ -112,7 +122,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
       </Text>
       <View style={styles.buttonRow}>
         <Pressable
-          onPress={(e) => { e.stopPropagation(); onPress(value - 1); }}
+          onPress={(e) => { e.stopPropagation(); onPress(value - (props.horizontal ? -1 : 1)); }}
           style={{ 
             borderBottomLeftRadius: props.horizontal ? 0 : props.borderRadius ?? 10,
             borderBottomRightRadius: props.additionalAdder ? 0 : props.borderRadius ?? 10,
@@ -129,7 +139,7 @@ const SimpleNumberInput = React.forwardRef((props: SimpleNumberInputProps, ref: 
           } 
         </Pressable>
         { props.additionalAdder ? <Pressable 
-          onPress={(e) => { e.stopPropagation(); onPress(value - (props.additionalAdder ?? 0)); }}
+          onPress={(e) => { e.stopPropagation(); let v = props.additionalAdder ?? 0; onPress(value - (props.horizontal ? v * -1 : v)); }}
           style={{ 
             borderBottomRightRadius: props.borderRadius ?? 10,
             borderTopRightRadius: props.horizontal ? props.borderRadius ?? 10 : 0, 

@@ -78,7 +78,7 @@ export default function WeightPage() {
       );
     }
 
-    getWeights();
+    getWeights(undefined, weights?.length + 1);
   }
 
   const clearWeights = async () => {
@@ -239,9 +239,9 @@ export default function WeightPage() {
   const Update = () => {
     return (
       <View style={styles.row}>
-        <ImportModal onSubmit={addWeightFromCSV} style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}>
+        {/* <ImportModal onSubmit={addWeightFromCSV} style={{ ...styles.modalButton, backgroundColor: theme.colors.primary }}>
           <ThemedText style={{ fontWeight: 'bold' }}>Import Data</ThemedText>
-        </ImportModal>
+        </ImportModal> */}
         <WeightModal 
           initalValue={weights[0]?.kilos as number ?? 0} 
           style={styles.modalButton} 

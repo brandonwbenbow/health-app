@@ -24,14 +24,14 @@ export class Database {
     await this.db?.execAsync(`
       CREATE TABLE IF NOT EXISTS weights (
         id INTEGER PRIMARY KEY,
-        user_id INTEGER DEFAULT 0,
+        user_id INTEGER DEFAULT 1,
         value REAL,
         ts DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS bloodpressures (
         id INTEGER PRIMARY KEY,
-        user_id INTEGER DEFAULT 0,
+        user_id INTEGER DEFAULT 1,
         lower_value REAL,
         upper_value, REAL,
         ts DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -39,14 +39,14 @@ export class Database {
 
       CREATE TABLE IF NOT EXISTS drinks (
         id INTEGER PRIMARY KEY,
-        user_id INTEGER DEFAULT 0,
+        user_id INTEGER DEFAULT 1,
         value REAL,
         ts DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS sleep_hours (
         id INTEGER PRIMARY KEY,
-        user_id INTEGER DEFAULT 0,
+        user_id INTEGER DEFAULT 1,
         value REAL,
         ts DATETIME DEFAULT CURRENT_TIMESTAMP
       );
