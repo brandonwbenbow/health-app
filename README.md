@@ -1,0 +1,27 @@
+# Health App (To Be Named)
+
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app). It requires [expo-dev-client](https://docs.expo.dev/versions/latest/sdk/dev-client/) to build locally.
+
+## Get started
+
+1. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+2. Start the app
+
+   ```bash
+    npx expo prebuild
+   ```
+
+3. Run App
+
+   ```bash
+   npx expo run:android
+   ```
+   or
+   ```bash
+   npx expo run:ios
+   ```
