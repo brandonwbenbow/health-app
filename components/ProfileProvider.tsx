@@ -8,12 +8,12 @@ import SplashScreen from './SplashScreen';
 import ProfileSetup from './ProfileSetup';
 import { applyTheme, useThemeColor } from '@/hooks/useThemeColor';
 
-const ProfileContext = createContext<ProfileData>({});
-const ProfileDispatchContext = createContext<(p: ProfileData) => void>(() => {});
+const ProfileContext = createContext<ProfileData | {}>({});
+const ProfileDispatchContext = createContext<(p: ProfileData | any) => void>(() => {});
 
 type ProfileState = {
   loaded: boolean,
-  data?: ProfileData
+  data: ProfileData | undefined
 }
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
@@ -23,15 +23,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     console.log("System UI Error:", err);
   });
 
-  const [profile, setProfile] = useState<ProfileState>({ loaded: false, data: {} });
-  const saveProfile = (data: ProfileData) => {
-    LocalStorage.setJSON('profile', data);
+  const [profile, setProfile] = useState<ProfileState>({ loaded: false, data: undefined });
+  const saveProfile = (data?: ProfileData | any) => {
+    LocalStorage.setJSON('profile', data ?? {});
     setProfile({ loaded: true, data: data });
   }
 
   useEffect(() => {
     LocalStorage.getJSON('profile').then((output) => {
-      if(Profile.isValid(output)) { setProfile({ loaded: true, data: output }); }
+      let valid = Profile.isValid(output);
+      setProfile({ loaded: true, data: valid ? output as ProfileData : undefined });
     });
   }, [])
 
@@ -44,7 +45,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
               ? <SplashScreen /> 
               : Profile.isValid(profile.data) 
               ? children 
-              : <ProfileSetup onSubmit={saveProfile} /> 
+              : <ProfileSetup initialProfile={profile.data} onSubmit={saveProfile} /> 
           }
         </ThemeProvider>
       </ProfileDispatchContext.Provider>

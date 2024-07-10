@@ -31,6 +31,7 @@ export const Colors = {
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
     primary: '#5CFFB6',
+    negative: '#fa2a2a',
     card: '#D7F5E6'
   },
   dark: {
@@ -41,6 +42,7 @@ export const Colors = {
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
     primary: '#00ED83',
+    negative: '#fa2a2a',
     card: '#36393B'
   }
 };

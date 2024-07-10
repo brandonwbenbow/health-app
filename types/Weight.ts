@@ -22,7 +22,7 @@ export class Weight {
 
   public toString(kilo?: boolean, fixed?: number) {
     return kilo 
-      ? `${Number(this._kilos.toFixed(fixed ?? 1))}kg`
-      : `${Number(this._pounds.toFixed(fixed ?? 1))}lb${this._pounds > 1 ? 's' : ''}`
+      ? `${Number(this._kilos.toFixed(fixed ?? 1))} kg`
+      : `${Number(this._pounds.toFixed(fixed ?? 1))} lb${this._pounds > 1 ? 's' : ''}`
   }
 }
