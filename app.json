@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Weight Tracker",
+    "name": "Weight Track",
     "slug": "weight-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -32,6 +32,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1a047155-85b5-4356-9244-520db352cb4d"
+      }
     }
   }
 }

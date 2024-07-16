@@ -47,6 +47,7 @@ export default function UnitSelector(props: UnitSelectorProps) {
               justifyContent: "center",
               alignItems: "center",
               padding: props.textOnly ? 0 : 10,
+              paddingTop: props.textOnly ? 0 : 15,
               borderTopLeftRadius: i == 0 ? 10 : 0,
               borderBottomLeftRadius: i == 0 ? 10 : 0,
               borderTopRightRadius: i == props.unitList.length - 1 ? 10 : 0,

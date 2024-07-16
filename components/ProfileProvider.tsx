@@ -8,7 +8,7 @@ import SplashScreen from './SplashScreen';
 import ProfileSetup from './ProfileSetup';
 import { applyTheme, useThemeColor } from '@/hooks/useThemeColor';
 
-const ProfileContext = createContext<ProfileData | {}>({});
+const ProfileContext = createContext<ProfileData | any>({});
 const ProfileDispatchContext = createContext<(p: ProfileData | any) => void>(() => {});
 
 type ProfileState = {
@@ -30,10 +30,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    LocalStorage.getJSON('profile').then((output) => {
-      let valid = Profile.isValid(output);
-      setProfile({ loaded: true, data: valid ? output as ProfileData : undefined });
-    });
+    setTimeout(() => {
+      LocalStorage.getJSON('profile').then((output) => {
+        let valid = Profile.isValid(output);
+        setProfile({ loaded: true, data: valid ? output as ProfileData : undefined });
+      });
+    }, 1000);
   }, [])
 
   return (

@@ -1,10 +1,12 @@
+import { CM } from "@/constants/Numbers";
 import { Weight } from "./Weight";
 
 export type ProfileData = {
   male: boolean,
   height: number,
   birthday: number,
-  goalWeight: number
+  goalWeight: number,
+  useKG?: boolean
 }
 
 export class Profile {
@@ -22,7 +24,8 @@ export class Profile {
       male: data?.male ?? true,
       height: data?.height ?? 0,
       birthday: data?.birthday ?? Date.now(),
-      goalWeight: data?.goalWeight ?? 0
+      goalWeight: data?.goalWeight ?? 0,
+      useKG: data?.useKG ?? false
     };
   }
 
@@ -31,24 +34,24 @@ export class Profile {
   getData() { return this.data; }
 
   calculateBMR(weight?: Weight) {
-    if(weight == undefined) { return 'No Weight Data' }
+    if(weight == undefined || isNaN(weight.kilos)) { return 'No Weight Data' }
     let bmr = 10 * weight.kilos + 6.25 * (this.data.height) - 5 * this.getAge();
     bmr += this.data.male ? 5 : -161;
     return bmr.toFixed(2);;
   }
 
   calculateBMI(weight?: Weight) {
-    if(weight == undefined) { return 'No Weight Data' }
+    if(weight == undefined || isNaN(weight.kilos)) { return 'No Weight Data' }
     let meters = this.data.height / 100;
     let heightSquared = meters * meters;
     return (weight.kilos / heightSquared).toFixed(2);
   }
 
   getBMIColor(bmi: number, bad = '#FA2A2A', warning = '#FFA500', good = '#00ED83') {
-    if(bmi < 18.5) { return bad; }
+    if(isNaN(bmi)) { return '#ffffff' }
+    else if(bmi < 18.5) { return bad; }
     else if(bmi < 25) { return good; }
     else if(bmi < 30) { return warning; }
-    else if(bmi === undefined) { return '#ffffff' }
     else { return bad; }
   }
 
@@ -56,13 +59,13 @@ export class Profile {
     return (new Date()).getFullYear() - (new Date(this.data.birthday ?? Date.now())).getFullYear();
   }
 
-  getHeightString(cm?: boolean, fixed?: number) {
+  getHeightString(fixed?: number, cm = this.data.useKG) {
     return cm 
-    ? `${Number(this.data.height.toFixed(fixed ?? 1))}cm`
-    : `${Number(this.data.height.toFixed(fixed ?? 1))}in`
+    ? `${Number(this.data.height.toFixed(fixed ?? 1))} cm`
+    : `${Number((this.data.height / CM).toFixed(fixed ?? 1))} in`
   }
 
-  getGoalWeightString(kilo?: boolean, fixed?: number) {
+  getGoalWeightString(fixed?: number, kilo = this.data.useKG) {
     return (new Weight(this.data.goalWeight)).toString(kilo, fixed);
   }
 }
